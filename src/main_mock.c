@@ -16,7 +16,7 @@
 /*--------LOCAL DEFINES--------*/
 #define MOCK 1
 #define STEP_SIZE PWM_USEC(1000)
-
+#define NO_ERROR 0
 
 /*--------LOCAL VARIABLES--------*/
 #if MOCK
@@ -32,24 +32,24 @@
         .name = "PWM_BLUE_MOCK",
     };
 
-    static const struct pwm_dt_spec red_pwm_led = {
+    struct pwm_dt_spec red_pwm_led = {
         .dev = &mock_red_pwm,
         .channel = 0,
-        .period = 0,
+        .period = 40000000,
         .flags = PWM_POLARITY_INVERTED,
     };
 
-    static const struct pwm_dt_spec green_pwm_led = {
+    struct pwm_dt_spec green_pwm_led = {
         .dev = &mock_green_pwm,
         .channel = 1,
-        .period = 0,
+        .period = 20000000,
         .flags = PWM_POLARITY_INVERTED,
     };
 
-    static const struct pwm_dt_spec blue_pwm_led = {
+    struct pwm_dt_spec blue_pwm_led = {
         .dev = &mock_blue_pwm,
         .channel = 2,
-        .period = 0,
+        .period = 10000000,
         .flags = PWM_POLARITY_NORMAL,
     };
 #else
@@ -64,6 +64,7 @@
 
 /*--------LOCAL FUNCTIONS--------*/
 bool pwm_is_ready_dt_mock(const struct pwm_dt_spec * spec);
+int pwm_set_pulse_dt_mock(const struct pwm_dt_spec * spec, uint32_t pulse);
 
 /*--------LOCAL APPLICATIONS--------*/
 int main(void)
@@ -71,7 +72,7 @@ int main(void)
     uint32_t pulse_red, pulse_green, pulse_blue; /* pulse widths */
     int ret;
 
-    printk("PWM-based RGB LED control\n");
+    printk("PWM-based RGB LED control %ld\n", STEP_SIZE);
 
     #if MOCK
         if (!pwm_is_ready_dt_mock(&red_pwm_led) ||
@@ -80,6 +81,7 @@ int main(void)
             printk("Error: one or more PWM devices not ready\n");
             return 0;
         }
+
     #else
         if (!pwm_is_ready_dt(&red_pwm_led) ||
             !pwm_is_ready_dt(&green_pwm_led) ||
@@ -89,22 +91,31 @@ int main(void)
         }
     #endif
 
-    /*
+
     while (1) {
         for (pulse_red = 0U; pulse_red <= red_pwm_led.period;
             pulse_red += STEP_SIZE) {
-            ret = pwm_set_pulse_dt(&red_pwm_led, pulse_red);
-            if (ret != 0) {
-                printk("Error %d: red write failed\n", ret);
+
+            #if MOCK
+                ret = pwm_set_pulse_dt_mock(&red_pwm_led, pulse_red);
+            #else
+                ret = pwm_set_pulse_dt(&red_pwm_led, pulse_red);
+            #endif
+            if (ret != NO_ERROR) {
+                    printk("Error %d: red write failed\n", ret);
                 return 0;
             }
 
             for (pulse_green = 0U;
                 pulse_green <= green_pwm_led.period;
                 pulse_green += STEP_SIZE) {
-                ret = pwm_set_pulse_dt(&green_pwm_led,
-                            pulse_green);
-                if (ret != 0) {
+
+                #if MOCK
+                    ret = pwm_set_pulse_dt_mock(&green_pwm_led, pulse_green);
+                #else
+                    ret = pwm_set_pulse_dt(&green_pwm_led, pulse_green);
+                #endif
+                if (ret != NO_ERROR) {
                     printk("Error %d: green write failed\n",
                         ret);
                     return 0;
@@ -113,20 +124,30 @@ int main(void)
                 for (pulse_blue = 0U;
                     pulse_blue <= blue_pwm_led.period;
                     pulse_blue += STEP_SIZE) {
-                    ret = pwm_set_pulse_dt(&blue_pwm_led,
-                                pulse_blue);
-                    if (ret != 0) {
+
+                    #if MOCK
+                        ret = pwm_set_pulse_dt_mock(&blue_pwm_led, pulse_blue);
+                    #else
+                        ret = pwm_set_pulse_dt(&blue_pwm_led, pulse_blue);
+                    #endif
+                    if (ret != NO_ERROR) {
                         printk("Error %d: "
                             "blue write failed\n",
                             ret);
                         return 0;
                     }
-                    k_sleep(K_SECONDS(1));
+                    k_sleep(K_MSEC(100));
                 }
             }
         }
-    }*/
+    }
     return 0;
+}
+
+int pwm_set_pulse_dt_mock(const struct pwm_dt_spec * spec, uint32_t pulse){
+
+    printk("%s, pulse %ld\n", spec->dev->name, pulse);
+    return NO_ERROR;
 }
 
 bool pwm_is_ready_dt_mock(const struct pwm_dt_spec * spec){

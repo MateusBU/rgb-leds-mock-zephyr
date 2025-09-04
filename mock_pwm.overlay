@@ -1,0 +1,25 @@
+/ {
+    aliases {
+        red_pwm_led = &mock_pwm0;
+        green_pwm_led = &mock_pwm1;
+        blue_pwm_led = &mock_pwm2;
+    };
+
+    mock_pwm0: pwm@0 {
+        compatible = "zephyr,pwm-emul";
+        status = "okay";
+        #pwm-cells = <3>;
+    };
+
+    mock_pwm1: pwm@1 {
+        compatible = "zephyr,pwm-emul";
+        status = "okay";
+        #pwm-cells = <3>;
+    };
+
+    mock_pwm2: pwm@2 {
+        compatible = "zephyr,pwm-emul";
+        status = "okay";
+        #pwm-cells = <3>;
+    };
+};

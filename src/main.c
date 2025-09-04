@@ -8,10 +8,21 @@
  * @file Sample app to demonstrate PWM-based RGB LED control
  */
 
-#include <zephyr/kernel.h>
+#define USE_MOCK 1
+
+#if USE_MOCK == 1
+    #define USE_MOCK_PWM
+#else
+    #include <zephyr/kernel.h>
+    #include <zephyr/device.h>
+    #include <zephyr/drivers/pwm.h>
+#endif
+
+#ifdef USE_MOCK_PWM
+    #include "main_mock_new.h"
+#endif
+
 #include <zephyr/sys/printk.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/pwm.h>
 
 static const struct pwm_dt_spec red_pwm_led =
 	PWM_DT_SPEC_GET(DT_ALIAS(red_pwm_led));

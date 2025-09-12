@@ -24,18 +24,43 @@
 
 #include <zephyr/sys/printk.h>
 
-static const struct pwm_dt_spec red_pwm_led =
-	PWM_DT_SPEC_GET(DT_ALIAS(red_pwm_led));
-static const struct pwm_dt_spec green_pwm_led =
-	PWM_DT_SPEC_GET(DT_ALIAS(green_pwm_led));
-static const struct pwm_dt_spec blue_pwm_led =
-	PWM_DT_SPEC_GET(DT_ALIAS(blue_pwm_led));
+#if USE_MOCK == 1
+
+    struct pwm_dt_spec red_pwm_led = {
+        .dev_name = "PWM_RED_MOCK",
+        .channel = 0,
+        .period = 40000000,
+        .flags = PWM_POLARITY_INVERTED,
+    };
+
+    struct pwm_dt_spec green_pwm_led = {
+        .dev_name = "PWM_GREEN_MOCK",
+        .channel = 1,
+        .period = 20000000,
+        .flags = PWM_POLARITY_INVERTED,
+    };
+
+    struct pwm_dt_spec blue_pwm_led = {
+        .dev_name = "PWM_BLUE_MOCK",
+        .channel = 2,
+        .period = 10000000,
+        .flags = PWM_POLARITY_NORMAL,
+    };
+#else
+    static const struct pwm_dt_spec red_pwm_led =
+        PWM_DT_SPEC_GET(DT_ALIAS(red_pwm_led));
+    static const struct pwm_dt_spec green_pwm_led =
+        PWM_DT_SPEC_GET(DT_ALIAS(green_pwm_led));
+    static const struct pwm_dt_spec blue_pwm_led =
+        PWM_DT_SPEC_GET(DT_ALIAS(blue_pwm_led));
+#endif
+
 
 #define STEP_SIZE PWM_USEC(2000)
 
 int main(void)
 {
-	uint32_t pulse_red, pulse_green, pulse_blue; /* pulse widths */
+	uint32_t pulse_red, pulse_green, pulse_blue; // pulse widths
 	int ret;
 
 	printk("PWM-based RGB LED control\n");

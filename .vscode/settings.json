@@ -5,6 +5,8 @@
         "**/templates/*": "django-txt",
         "**/requirements{/**,*}.{txt,in}": "pip-requirements",
         "typeinfo": "c",
-        "main_mock_new.h": "c"
+        "main_mock_new.h": "c",
+        "stdbool.h": "c",
+        "unistd.h": "c"
     }
 }
